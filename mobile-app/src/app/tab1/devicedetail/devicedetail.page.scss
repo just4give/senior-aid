@@ -1,0 +1,57 @@
+.balance{
+    font-size: 60px;
+    color: #ffffff;
+    border: 2px solid #10dc60;
+    padding: 20px;
+    border-radius: 20px;
+    line-height: 60px;
+    background-color: #10dc60;
+}
+
+ion-content .bg{
+    
+    background: #fff url('../../../assets/bg1.jpg') no-repeat center center / cover;
+    opacity: 0.5;
+    height: 100vh;
+    width: 100%;
+    background-color: yellow;
+    position: absolute;
+}
+.device-id{
+    font-size: 30px;
+    font-weight: bold;
+    text-align: center;
+}
+.info-card{
+    height: 320px!important;
+    max-height: 320px!important;
+}
+@keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+  
+    to {
+      opacity: 1;
+    }
+  }
+
+.fadeIn {
+    animation-name: fadeIn;
+    animation-duration: 1s;
+}
+
+.positive{
+    color: #0d9643;
+    font-weight: bold;
+}
+
+.negative{
+    color:red;
+    font-weight: bold;
+}
+
+.scroll-list{
+    height: 400px;
+    overflow-y: scroll;
+}

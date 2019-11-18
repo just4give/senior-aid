@@ -1,0 +1,97 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Details</ion-title>
+    <ion-buttons slot="start">
+        <ion-back-button defaultHref="/app/tabs/tab1"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content >
+    <div class="bg"></div>
+    <ion-row>
+        <ion-col col-6>
+            <ion-card class="ion-text-left info-card" color="warning">
+                
+              
+                <ion-card-content>
+                    <ion-row>
+                        <ion-col col-4>
+                            <div padding  >
+                                <span class="device-id">{{deviceId}}</span>
+                            </div>
+                            
+                            <div padding>
+                                
+                                <span class="balance" color="dark">{{balance}}i</span>
+                            </div>
+                            <div padding>
+                                <ion-button (click)="showQRCode=!showQRCode">QR Code</ion-button>
+                                <ion-button color="secondary" (click)="generateAddress()"><ion-icon name="refresh"></ion-icon></ion-button>
+                            </div>
+                            <!-- <div padding>
+                                    <ion-button (click)="generateAddress">Re-Generate</ion-button>
+                                    
+                            </div> -->
+                        </ion-col>
+                        <ion-col col-8>
+                            <ngx-qrcode *ngIf="showQRCode" [(qrc-value)] = "seedJson.receivingAddress">
+                  
+                            </ngx-qrcode>
+                              <!-- <h5 *ngIf="showQRCode">{{seedJson.spendingAddress}}</h5> -->
+                        </ion-col>
+
+                    </ion-row>
+                  
+                  
+                </ion-card-content>
+              </ion-card>
+        </ion-col>
+        <ion-col col-6>
+            <ion-card class="ion-text-left info-card" color="tertiary">
+                
+                <ion-card-content>
+                    <div padding  >
+                        <span class="device-id">BATTERY</span>
+                    </div>
+                  <div padding>
+                      <span class="balance">100%</span>
+                  </div>
+                  <div padding>
+                      <p style="width: 200px" *ngIf="showQRCode">{{seedJson.receivingAddress}}</p>
+                  </div>
+                  
+                </ion-card-content>
+              </ion-card>
+        </ion-col>
+        
+      </ion-row>
+
+      <ion-row>
+          <ion-col col-6>
+              <ion-card color="unknown">
+                  <ion-card-content class="scroll-list">
+                      <ion-list >
+                          <ion-list-header color="dark">
+                              <ion-label style="font-size: 20px">Activity History </ion-label>
+                            </ion-list-header>
+                          <ion-item  class="fadeIn"  *ngFor="let m of messages" >
+                            <ion-icon color="danger" *ngIf="m.message.includes('chagring')" name="flash" item-start></ion-icon>
+                            <ion-icon color="success" *ngIf="m.message.includes('Ride')" name="logo-model-s"></ion-icon>
+                            <ion-icon color="danger" *ngIf="m.message.includes('wash')" name="construct" item-start></ion-icon>
+                               
+                               <p padding>{{m.message}}</p>
+                               <ion-note slot="end" [ngClass]="{'positive': m.coins>=0, 'negative': m.coins <0 }"><b>{{m.coins}} IOTA</b> </ion-note>
+                               <ion-note slot="end">{{m.timestamp|date:'short'}}</ion-note>
+                          </ion-item>
+                      </ion-list>
+
+                  </ion-card-content>
+              </ion-card>
+              
+          </ion-col>
+          <ion-col col-6></ion-col>
+      </ion-row>
+    
+      
+</ion-content>

@@ -1,0 +1,58 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      Dashboard
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <div padding>
+        <ion-button *ngIf="devices && devices.length==0" color="dark" size="large" [routerLink]="'/app/tabs/tab1/newdevice'" expand="block">ADD DEVICE</ion-button>
+    </div>
+    <ion-list>
+       
+        <ion-item *ngFor="let d of devices">
+          <ion-icon name="bluetooth" item-start></ion-icon>
+             <p padding>{{d.DEVICE_MAC}} <strong class="status" [ngClass]="{'online':online,'offline':!online}">{{online?'ON':'OFF'}}</strong></p> 
+             
+        </ion-item>
+        <ion-item>
+            <p padding>{{user.FISRT_PHONE}} </p>
+            <ion-note slot="end">Primary Contact</ion-note>
+        </ion-item>
+        <ion-item>
+            <p padding>{{user.SECOND_PHONE}} </p>
+            <ion-note slot="end">Secondary Contact</ion-note>
+        </ion-item>
+      </ion-list>
+      
+              <ion-list-header color="dark">
+                  <ion-label style="font-size: 20px">Recent Activities </ion-label>
+              </ion-list-header>
+              <ion-list>
+
+                  <ion-item-sliding *ngFor="let m of activities" >
+                      
+                      <ion-item  class="fadeIn">
+                            
+                            <ion-icon color="danger light" *ngIf="m.TYPE=='FALL'" name="call" item-start></ion-icon>
+                            <ion-icon color="tertiary" *ngIf="m.TYPE=='PANIC'" name="radio-button-on" item-start></ion-icon>
+                            <ion-icon color="success" *ngIf="m.TYPE=='MED'" name="flask" item-start></ion-icon>
+
+                             <p padding>{{m.MESSAGE}}</p>
+                             <ion-icon *ngIf="m.ACK==='Y'" color="success" name="checkmark-circle"></ion-icon>
+                             <p *ngIf="m.ACK==='Y'" class="ack" >ACK</p>
+                             <ion-note slot="end" class="ts">{{m.TS|date:'short'}}</ion-note>
+                             
+                        </ion-item>
+                  
+                      <ion-item-options side="end">
+                          <ion-item-option *ngIf="(m.TYPE=='FALL' || m.TYPE=='PANIC') && m.ACK!=='Y'" (click)="ack(m)">ACK</ion-item-option>
+                          
+                      </ion-item-options>
+                    </ion-item-sliding>
+              
+              </ion-list>
+          
+</ion-content>
