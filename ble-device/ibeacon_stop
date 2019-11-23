@@ -1,0 +1,5 @@
+#!/bin/sh
+BLUETOOTH_DEVICE=hci0
+echo "Disabling virtual iBeacon..."
+sudo hciconfig $BLUETOOTH_DEVICE noleadv
+echo "Complete"

@@ -19,7 +19,7 @@ noble.on('discover', function(peripheral) {
   //var localName = advertisement.localName;
   //console.log('found device: ', peripheral.uuid);
   
-    if(peripheral.uuid == addressToTrack){
+    if(peripheral.uuid == addressToTrack.toLowerCase()){
       var dist = calculateDistance(peripheral.rssi);
       if(arr.length < 4){
         arr.push(dist);

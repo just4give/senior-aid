@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
 import { Storage } from  '@ionic/storage';
 import { NavController } from '@ionic/angular';
+import { MqttService, IMqttMessage } from 'ngx-mqtt';
 
 @Component({
   selector: 'app-tab3',
@@ -26,7 +27,8 @@ export class Tab3Page implements OnInit{
 
   often:any[]=['MON','TUE','WED','THU','FRI','SAT','SUN'];
 
-  constructor(public apiService:ApiService,public storage:Storage,public navCtrl:NavController) {}
+  constructor(public apiService:ApiService,public storage:Storage,public navCtrl:NavController,
+    public _mqttService: MqttService) {}
 
   async ngOnInit(){
     this.user = await this.storage.get("user");
@@ -58,6 +60,11 @@ export class Tab3Page implements OnInit{
       med.USER_ID = this.user.ID;
       await this.apiService.addMedicine(med).toPromise();
     }
+    this._mqttService.publish("senior-aid/med/update","",{ qos: 1, retain: true }).subscribe(() => {
+      console.log('posted message');
+    });
+
+    
     this.newMed ={};
     this.medicines = await this.apiService.medicines(this.device.ID).toPromise();
   }

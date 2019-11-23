@@ -13,6 +13,8 @@ import os.path
 from os import path
 
 #pip3 install paho-mqtt
+BACKEND='http://ec2-52-39-24-35.us-west-2.compute.amazonaws.com:5000'
+DEVICE_MAC='B827EBB2C244'
 
 polly = boto3.client('polly')
 
@@ -23,8 +25,8 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, message):
     print("message received")
     if message.topic == 'senior-aid/fall/detected':
-        play_mp3('siren.mp3')
         blink_red()
+        play_mp3('siren.mp3')
         data = {'DEVICE_MAC':DEVICE_MAC,'TYPE':'FALL','MESSAGE':'Fall detection was triggered.'}
         r = requests.post(BACKEND+'/api/activity',data=data, headers={"Accept": "application/json"})
         if r.ok:
@@ -36,12 +38,18 @@ def on_message(client, userdata, message):
         generate_alert_mp3()
 
     if message.topic == 'senior-aid/panic/pressed':
+        blink_red()
         play_mp3('siren.mp3')
         data = {'DEVICE_MAC':DEVICE_MAC,'TYPE':'PANIC','MESSAGE':'Panic button was triggered'}
         r = requests.post(BACKEND+'/api/activity',data=data, headers={"Accept": "application/json"})
         if r.ok:
                 print("activity posted.")
+    if message.topic == '/senior-aid/ibeacon':
+        GPIO.output(GREEN_LIGHT, True)
 
+    if message.topic == 'senior-aid/device/online':
+        GPIO.output(AMBER_LIGHT, True)
+        
 
 paho.Client.connected_flag=False
 broker = 'broker.hivemq.com'
@@ -53,6 +61,11 @@ client.connect(broker,port)
 while not client.connected_flag:
     time.sleep(1)
 client.subscribe('senior-aid/fall/detected')
+client.subscribe('senior-aid/panic/pressed')
+client.subscribe('senior-aid/med/update')
+client.subscribe('senior-aid/device/online')
+client.subscribe('/senior-aid/ibeacon')
+
 client.on_message=on_message
 
 
@@ -67,13 +80,12 @@ GPIO.setup(RED_LIGHT, GPIO.OUT)
 GPIO.setup(AMBER_LIGHT, GPIO.OUT)
 GPIO.setup(GREEN_LIGHT, GPIO.OUT)
 
-BACKEND='http://d58d34c3.ngrok.io'
-DEVICE_MAC='B827EBB2C244'
+
 
 
 def blink_red():
     COUNTER=0
-    while COUNTER<5:
+    while COUNTER<10:
         COUNTER=COUNTER+1
         GPIO.output(RED_LIGHT, True)
         time.sleep(2)
@@ -106,9 +118,10 @@ def generate_alert_mp3():
                         tm = tm + " PM "
                 else:
                         tm = tm + " AM "
-                response = polly.synthesize_speech(VoiceId='Joanna',
+                response = polly.synthesize_speech(VoiceId='Salli',
                 OutputFormat='mp3', 
-                Text = "Take {} tablet of {} at {}".format(med['QTY'],med['MESSAGE'],tm))
+                TextType = 'ssml',
+                Text = "<speak> Take {} tablet of <prosody volume='loud'> {} </prosody> <break time='.3s'/>at <break time='.5s'/>{} </speak>".format(med['QTY'],med['MESSAGE'],tm))
                 file = open("{}.mp3".format(med['ID']), 'wb')
                 file.write(response['AudioStream'].read())
                 file.close()
@@ -116,6 +129,7 @@ def generate_alert_mp3():
 def check_for_notifications():
     while True:
         print("check for medicine reminders")
+        GPIO.output(RED_LIGHT, False)
         now = datetime.now()
         day = datetime.today().strftime('%a').upper()
         print("current hour",now.hour,day)
@@ -123,13 +137,24 @@ def check_for_notifications():
         if(r.ok):
             jData = json.loads(r.text)
             print(jData)
-            for med in jData:
-                    if med['HOUR']==now.hour and day in med['FREQ']:
-                            fileName="{}.mp3".format(med["ID"])
-                            if path.exists(fileName):
-                                    play_mp3(fileName)   
+            filtered = list(filter(lambda med: med['HOUR']==now.hour and day in med['FREQ'], jData))
+            if len(filtered) > 0:
+                    GPIO.output(RED_LIGHT, True)
+                    play_mp3('beep-2.mp3')
+                    play_mp3('reminder-intro.mp3')       
+            for x in filtered:
+                fileName="{}.mp3".format(x["ID"])
+                if path.exists(fileName):
+                        play_mp3(fileName) 
+                              
 
-        time.sleep(60)
+        time.sleep(15*60)
+
+def check_for_online():
+        while True:
+           GPIO.output(GREEN_LIGHT, False)
+           GPIO.output(AMBER_LIGHT, False)
+           time.sleep(30)   
 
 
 if __name__ == '__main__':
@@ -137,7 +162,7 @@ if __name__ == '__main__':
         # Start threads
         generate_alert_mp3()
         threading.Thread(target=check_for_notifications,daemon=True).start()
-
+        threading.Thread(target=check_for_online,daemon=True).start()
         while True:
             time.sleep(1)
             

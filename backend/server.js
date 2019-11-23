@@ -40,7 +40,7 @@ let router = express.Router();
 
 
 cron.schedule("*/30 * * * *", async function() {
-    console.log("running a task every two minutes "+new Date().toString());
+    console.log("running a task every 30 minutes "+new Date().toString());
     let pendingAck = await db_helper.all(`SELECT *  FROM ACTIVITY WHERE TYPE IN('FALL','PANIC') AND ACK IS NULL AND LEVEL=1`,
     []);
     console.log(pendingAck);

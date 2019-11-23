@@ -9,7 +9,8 @@ import * as d3Scale from 'd3-scale';
 import * as d3Array from 'd3-array';
 import * as d3Axis from 'd3-axis';
 import * as d3Shape from 'd3-shape';
-import {TweenMax} from "gsap";
+import {transition} from 'd3-transition';
+
 
 
 @Component({
@@ -24,12 +25,14 @@ export class Tab2Page {
   svg:any;
   x: any;
   y: any;
+  
+ 
 
   private subscription: Subscription;
 
   
   constructor(public zone: NgZone, public apiService:ApiService,private _platform: Platform,
-    public _mqttService: MqttService) {
+    public _mqttService: MqttService,private _elem: ElementRef) {
       this.width= _platform.width();
       this.height = _platform.height();
       console.log(this.width,this.height);
@@ -42,9 +45,15 @@ export class Tab2Page {
       
       console.log('messsage received ',message.payload.toString());
       var distance = JSON.parse(message.payload.toString()).dist;
+      
+      var motion = this.svg.select("#beacon");
+      transition(motion);
 
-      TweenMax.to("#beacon", {rotation: 0, y: that.y(distance), duration: 1, ease: "easeOutExpo" });
-
+      motion
+      .transition()
+      .duration(2000)
+      .attr("y", that.y(distance))
+      
     });
 
   }
@@ -100,7 +109,7 @@ export class Tab2Page {
           .style("stroke-width", 3)
           .attr("stroke", "#5bd3f0b5");
 
-    this.svg.append("rect")
+    var rect = this.svg.append("rect")
           .attr("id","beacon")
           .attr("x", (d)=>{return that.width/2-10})
           .attr("y", 10)
@@ -110,6 +119,7 @@ export class Tab2Page {
           .attr("rx","5")
           .style("stroke-width", 1)
           .attr("stroke", "#ffd31a");
+
       //TweenMax.to("#beacon", {rotation: 0, y: 0, duration: 0.1, ease: "easeOutExpo" });
       //TweenMax.to("#beacon", {rotation: 360, y: this.height-80, duration: 10, ease: "easeOutExpo" });
   }

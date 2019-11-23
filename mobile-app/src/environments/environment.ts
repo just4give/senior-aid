@@ -4,7 +4,7 @@
 //52.39.24.35
 export const environment = {
   production: false,
-  url : 'http://ec2-52-39-24-35.us-west-2.compute.amazonaws.com:5000'
+  url : 'http://xxxxx.compute.amazonaws.com:5000'
 };
 
 /*

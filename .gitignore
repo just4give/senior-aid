@@ -1,1 +1,5 @@
 **/node_modules
+**/deploy.txt
+**/platforms
+**/plugins
+mobile-app/www

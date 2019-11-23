@@ -31,7 +31,7 @@ client.on_message=on_message
 device="AAABACADAFAGAH"
 
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)#Button to GPIO23
+GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)#Button to GPIO23
 
 # Register
 power_mgmt_1 = 0x6b
@@ -98,7 +98,7 @@ bus.write_byte_data(address, power_mgmt_1, 0)
 
 def check_panic_button():
     while True:
-        button_state = GPIO.input(23)
+        button_state = GPIO.input(18)
         if button_state == False:
             print('Panic button Pressed...')
             data={'mac':device,'ts': int(time.time()*1000)}
@@ -115,6 +115,7 @@ def check_online():
 
 if __name__ == '__main__':
     try:
+        threading.Thread(target=check_panic_button,daemon=True).start()
         threading.Thread(target=check_online,daemon=True).start()
         while True:
             
@@ -140,7 +141,7 @@ if __name__ == '__main__':
             #calculating Amplitute vactor for 3 axis
             Raw_AM = math.sqrt((ax*ax)+(ay*ay)+(az*az))
             AM = Raw_AM * 10
-            print("AM",AM)
+            #print("AM",AM)
             if trigger3==True:
                 trigger3count=trigger3count+1
                 if trigger3count>=10:
@@ -158,7 +159,7 @@ if __name__ == '__main__':
             if fall==True:
                 print("Fall detected")
                 fall=False
-                data={'mac':device,'tsstr':datetime.now(),'ts': int(time.time()*1000)}
+                data={'mac':device,'ts': int(time.time()*1000)}
                 client.publish('senior-aid/fall/detected',json.dumps(data))
             
             if trigger2count>=6: #allow 0.5s for orientation change

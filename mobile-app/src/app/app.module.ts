@@ -21,6 +21,8 @@ import {
   IMqttServiceOptions,
   MqttService
 } from 'ngx-mqtt';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 
 export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
   hostname: 'broker.hivemq.com',
@@ -37,7 +39,8 @@ export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
     HttpClientModule,
     IonicStorageModule.forRoot(),
     MqttModule.forRoot(MQTT_SERVICE_OPTIONS),
-    NgxQRCodeModule
+    NgxQRCodeModule,
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [
     StatusBar,

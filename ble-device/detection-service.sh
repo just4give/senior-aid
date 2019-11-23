@@ -5,6 +5,10 @@ if [[ $UID != 0 ]]; then
   exit 1
 fi
 
+apt-get install bluez -y
+chmod +x /home/pi/detection/ibeacon_start
+chmod +x /home/pi/detection/ibeacon_stop
+
 cat > /etc/init.d/detection << "EOF"
 #!/bin/bash
 ### BEGIN INIT INFO
@@ -26,10 +30,12 @@ case "$1" in
     sleep 60
     printf "%-50s" "Starting fall detection..."
     cd /home/pi/detection
-    python3 fall_detection.py
+    ./ibeacon_start
+    python3 fall_detection.py &
     ;;
   stop)
     printf "%-50s" "Stopping ibeacon..."
+    ./ibeacon_stop
     pkill -9 -f fall_detection.py
     ;;
   restart)
@@ -42,5 +48,6 @@ case "$1" in
 esac
 EOF
 
-chmod +x /etc/init.d/detection
-update-rc.d -f /etc/init.d/detection defaults
+cd /etc/init.d
+chmod +x detection
+update-rc.d -f detection defaults

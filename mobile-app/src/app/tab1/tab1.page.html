@@ -41,6 +41,7 @@
                             <ion-icon color="success" *ngIf="m.TYPE=='MED'" name="flask" item-start></ion-icon>
 
                              <p padding>{{m.MESSAGE}}</p>
+                             <p padding class="ts">L{{m.LEVEL}}</p>
                              <ion-icon *ngIf="m.ACK==='Y'" color="success" name="checkmark-circle"></ion-icon>
                              <p *ngIf="m.ACK==='Y'" class="ack" >ACK</p>
                              <ion-note slot="end" class="ts">{{m.TS|date:'short'}}</ion-note>

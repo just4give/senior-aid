@@ -12,11 +12,11 @@ import { Subscription } from 'rxjs';
 })
 export class Tab1Page implements OnInit{
 
-  private user:any={};
-  private devices:any[];
+  user:any={};
+  devices:any[];
   device:any;
   activities:any[];
-  private subscription: Subscription;
+  subscription: Subscription;
   timestamp:number;
   online:boolean =  false;
 
