@@ -111,7 +111,7 @@ def check_online():
     while True:
         data={'mac':device,'ts': int(time.time()*1000)}
         client.publish('senior-aid/device/online',json.dumps(data))
-        time.sleep(300)
+        time.sleep(5)
 
 if __name__ == '__main__':
     try:
@@ -119,80 +119,84 @@ if __name__ == '__main__':
         threading.Thread(target=check_online,daemon=True).start()
         while True:
             
-            #mpu_read()
-            AcX=read_word_2c(0x3b)   
-            AcY=read_word_2c(0x3d)
-            AcZ=read_word_2c(0x3f)
-            Tmp=read_word_2c(0x41)
-            GyX=read_word_2c(0x43)
-            GyY=read_word_2c(0x45)
-            GyZ=read_word_2c(0x47)
+            try:
+                #mpu_read()
+                AcX=read_word_2c(0x3b)   
+                AcY=read_word_2c(0x3d)
+                AcZ=read_word_2c(0x3f)
+                Tmp=read_word_2c(0x41)
+                GyX=read_word_2c(0x43)
+                GyY=read_word_2c(0x45)
+                GyZ=read_word_2c(0x47)
 
-            #2050, 77, 1947 are values for calibration of accelerometer
-            ax = (AcX-2050)/16384.00
-            ay = (AcY-77)/16384.00
-            az = (AcZ-1947)/16384.00
+                #2050, 77, 1947 are values for calibration of accelerometer
+                ax = (AcX-2050)/16384.00
+                ay = (AcY-77)/16384.00
+                az = (AcZ-1947)/16384.00
 
-            #270, 351, 136 for gyroscope
-            gx = (GyX+270)/131.07
-            gy = (GyY-351)/131.07
-            gz = (GyZ+136)/131.07
-            
-            #calculating Amplitute vactor for 3 axis
-            Raw_AM = math.sqrt((ax*ax)+(ay*ay)+(az*az))
-            AM = Raw_AM * 10
-            #print("AM",AM)
-            if trigger3==True:
-                trigger3count=trigger3count+1
-                if trigger3count>=10:
-                    angleChange=math.sqrt((gx*gx)+(gy*gy)+(gz*gz))
-                    print("angleChange=",angleChange)
-                    if angleChange>=0 and angleChange<=10: #if orientation changes remains between 0-10 degrees
-                        fall=True
-                        trigger3=False
-                        trigger3count=0
-                    else: #user regained normal orientation
-                        trigger3=False
-                        trigger3count=0
-                        print("TRIGGER 3 DEACTIVATED")
-            
-            if fall==True:
-                print("Fall detected")
-                fall=False
-                data={'mac':device,'ts': int(time.time()*1000)}
-                client.publish('senior-aid/fall/detected',json.dumps(data))
-            
-            if trigger2count>=6: #allow 0.5s for orientation change
-                trigger2=False
-                trigger2count=0
-                print("TRIGGER 2 DECACTIVATED")
-            
-            if trigger1count>=6: #allow 0.5s for AM to break upper threshold
-                trigger1=False
-                trigger1count=0
-                print("TRIGGER 1 DECACTIVATED")
-
-            if trigger2==True:
-                trigger2count=trigger2count+1
-                angleChange = math.sqrt((gx*gx)+(gy*gy)+(gz*gz))
-                if angleChange>=30 and angleChange<=400: #if orientation changes by between 80-100 degrees
-                    trigger3=True
+                #270, 351, 136 for gyroscope
+                gx = (GyX+270)/131.07
+                gy = (GyY-351)/131.07
+                gz = (GyZ+136)/131.07
+                
+                #calculating Amplitute vactor for 3 axis
+                Raw_AM = math.sqrt((ax*ax)+(ay*ay)+(az*az))
+                AM = Raw_AM * 10
+                #print("AM",AM)
+                if trigger3==True:
+                    trigger3count=trigger3count+1
+                    if trigger3count>=10:
+                        angleChange=math.sqrt((gx*gx)+(gy*gy)+(gz*gz))
+                        print("angleChange=",angleChange)
+                        if angleChange>=0 and angleChange<=10: #if orientation changes remains between 0-10 degrees
+                            fall=True
+                            trigger3=False
+                            trigger3count=0
+                        else: #user regained normal orientation
+                            trigger3=False
+                            trigger3count=0
+                            print("TRIGGER 3 DEACTIVATED")
+                
+                if fall==True:
+                    print("Fall detected")
+                    fall=False
+                    data={'mac':device,'ts': int(time.time()*1000)}
+                    client.publish('senior-aid/fall/detected',json.dumps(data))
+                
+                if trigger2count>=6: #allow 0.5s for orientation change
                     trigger2=False
                     trigger2count=0
-                    print("TRIGGER 3 ACTIVATED=",angleChange)
-            
-            if trigger1==True:
-                trigger1count=trigger1count+1
-                if AM>=12: #if AM breaks upper threshold (3g)
-                    trigger2=True
-                    print("TRIGGER 2 ACTIVATED")
+                    print("TRIGGER 2 DECACTIVATED")
+                
+                if trigger1count>=6: #allow 0.5s for AM to break upper threshold
                     trigger1=False
                     trigger1count=0
-            
-            if AM<=2 and trigger2==False: #if AM breaks lower threshold (0.4g)
-                trigger1=True
-                print("TRIGGER 1 ACTIVATED")
-            
+                    print("TRIGGER 1 DECACTIVATED")
+
+                if trigger2==True:
+                    trigger2count=trigger2count+1
+                    angleChange = math.sqrt((gx*gx)+(gy*gy)+(gz*gz))
+                    if angleChange>=30 and angleChange<=400: #if orientation changes by between 80-100 degrees
+                        trigger3=True
+                        trigger2=False
+                        trigger2count=0
+                        print("TRIGGER 3 ACTIVATED=",angleChange)
+                
+                if trigger1==True:
+                    trigger1count=trigger1count+1
+                    if AM>=12: #if AM breaks upper threshold (3g)
+                        trigger2=True
+                        print("TRIGGER 2 ACTIVATED")
+                        trigger1=False
+                        trigger1count=0
+                
+                if AM<=2 and trigger2==False: #if AM breaks lower threshold (0.4g)
+                    trigger1=True
+                    print("TRIGGER 1 ACTIVATED")
+            except IOError as e:
+                print("I/O error({}): {}".format(e.errno, e.strerror))
+            except:
+                print("something went wrong")
             time.sleep(0.1)
 
     except KeyboardInterrupt:
